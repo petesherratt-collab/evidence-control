@@ -14,15 +14,20 @@
   .k { color: #52525b; font-size: .85rem; letter-spacing: .04em;
        text-transform: uppercase; }
   h1 { font-size: 1.4rem; }
-  footer { margin-top: 2.5rem; font-size: .9rem; color: #52525b; }
+  footer { margin-top: 2.5rem; padding-top: 1rem; font-size: .9rem;
+           color: #52525b; border-top: 1px solid #d4d4d8; }
+  code { font-family: ui-monospace, monospace; }
   @media (prefers-color-scheme: dark) {
     body { background: #18181b; color: #e4e4e7; }
     #tick { background: #27272a; border-color: #3f3f46; }
     .k, footer { color: #a1a1aa; }
+    footer { border-color: #3f3f46; }
   }
 </style>
 </head>
 <body>
+
+<main>
 
 <h1>Evidence archive — control target</h1>
 
@@ -32,10 +37,10 @@ a change here has told you something about the monitor rather than about the
 world.</p>
 
 <p id="tick">
-<span class="k">built at</span>
-<span id="built"><time datetime="2026-08-03T10:29:06Z">2026-08-03T10:29:06Z</time></span>
+<span class="k">generated</span>
+<span id="generated"><time datetime="2026-08-03T10:43:51Z">2026-08-03T10:43:51Z</time></span>
 <span class="k">sequence</span>
-<span id="seq">2</span>
+<span id="seq">3</span>
 </p>
 
 <p>It is the control for
@@ -46,16 +51,29 @@ something if you can tell it apart from an archive that stopped collecting.
 Polling this page alongside them is what makes that difference visible: if the
 quiet targets are quiet and this one is still ticking, the quiet is real.</p>
 
+<p>Everything above that moves between builds is inside
+<code>&lt;main&gt;</code>. The build nonce in the footer is outside it, and is
+there to be <em>rejected</em> — a watcher selecting <code>main</code> should
+see the timestamp move and never see the nonce. The generation timestamp is
+machine-readable in the <code>datetime</code> attribute, so the lag between
+when this page was built and when an archive observed it can be measured
+rather than assumed.</p>
+
 <p>What a tick observed here does and does not show is set out in
 <a href="https://github.com/petesherratt-collab/evidence-control#what-this-proves">the
 README</a>. In short: it evidences that the collector fetched fresh content
 from the open internet and recorded it. It says nothing about whether the
 extraction rules for any other target were still selecting the right thing.</p>
 
+</main>
+
 <footer>
-No tracking, no cookies, nothing dynamic — a static file rebuilt in CI.
+<p>Build nonce <code id="nonce">1b712c4012213baf</code> — deliberate noise, outside
+<code>&lt;main&gt;</code>. It changes on every build whether or not anything
+above it did.</p>
+<p>No tracking, no cookies, nothing dynamic — a static file rebuilt in CI.
 Crawl it freely; that is what it is for.
-<a href="https://github.com/petesherratt-collab/evidence-control">Source</a>.
+<a href="https://github.com/petesherratt-collab/evidence-control">Source</a>.</p>
 </footer>
 
 </body>

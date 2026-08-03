@@ -40,8 +40,39 @@ behind the page when it was built. That is deliberately not a counter this repo
 keeps for itself: anyone who clones the repository can recompute it, so the
 page cannot assert a tick that the history does not support.
 
-Everything that varies lives inside `#tick`. The rest of the page is
-byte-stable between builds, so there is no incidental churn to filter out.
+### Signal inside `<main>`, noise outside it
+
+A normalisation contract has two halves — select the thing that matters,
+discard the churn around it — and a control that exercises only the first half
+is half a control. So the page is built in two:
+
+| where | what | a watcher selecting `main` should |
+|---|---|---|
+| inside `<main>` | ISO generation timestamp, sequence number | **see it move** |
+| in `<footer>` | a random build nonce | **never see it** |
+
+The nonce changes on every build whether or not anything inside `main` did.
+That also makes the control structurally resemble the targets it vouches for:
+three of those churn at the raw level on every single request — CSP nonces,
+ASP.NET viewstate — while their selected region sits perfectly still. A control
+whose raw bytes moved only when its signal moved would be a simpler shape than
+anything it is standing in for, and would not exercise the distinction between
+`raw chg` and `doc chg` that the whole archive turns on.
+
+### Measuring observation lag
+
+The generation time is machine-readable in the `datetime` attribute of a
+`<time>` element inside `main`. Because the page states when it was built, and
+the archive records when it was fetched, the difference between them is
+measurable rather than assumed.
+
+That matters beyond this page. Any claim of the form "this notice changed
+between X and Y" rests on an observation resolution, and the configured poll
+period is a floor for it, not the real figure — scheduler drift, retries and
+fetch time all widen the bracket. The control is the only target whose true
+change time is known, so it is the only place the real width can be measured.
+`kibitzr archive calibration` in the collector reads it back out of the
+retained responses.
 
 ## What this proves
 
