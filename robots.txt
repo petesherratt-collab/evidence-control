@@ -1,0 +1,9 @@
+# This page exists to be polled. Crawl it.
+#
+# Stated explicitly because the archive that watches it treats robots.txt as
+# binding on every other target it collects, and declined one source outright
+# over it. A control target that its own collector would have to ignore a
+# disallow to reach would undercut the point.
+
+User-agent: *
+Allow: /

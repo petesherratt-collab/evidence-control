@@ -1,0 +1,55 @@
+name: tick
+
+# Every 15 minutes. GitHub's scheduler is best-effort and routinely runs late
+# — sometimes by tens of minutes, and it skips runs under load — so nothing
+# downstream should assume a tick arrives on the quarter hour. The page states
+# the time it was actually built, and a watcher compares that against the last
+# one it saw rather than against the clock. That tolerates jitter without
+# weakening what a tick shows.
+#
+# 15 minutes is well inside the collector's shortest poll period (1 hour), so
+# every poll finds the page already changed. The margin absorbs a couple of
+# skipped runs before a poll would see a stale page and read as a fault.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+# Never two at once: both would build from the same parent and the second push
+# would be rejected. Queue instead of cancelling — a dropped tick is a gap in
+# the control series, which is the one thing this repo must not manufacture.
+concurrency:
+  group: tick
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # build.py counts commits, so it needs the history, not a shallow
+          # clone of depth 1.
+          fetch-depth: 0
+
+      - run: python3 build.py
+
+      - name: Commit the new tick
+        run: |
+          git config user.name  "evidence-control tick"
+          git config user.email "noreply@github.com"
+          git add index.html
+          # Nothing to commit means the build produced a byte-identical page,
+          # which at second precision should be impossible. Fail loudly rather
+          # than exiting green on a page that did not move — a control that
+          # silently stops ticking is worse than no control.
+          git diff --cached --quiet && {
+            echo "index.html unchanged - build.py is not varying the page"
+            exit 1
+          }
+          git commit -m "tick $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push
